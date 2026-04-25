@@ -1,7 +1,7 @@
 import logging
 import os
 import uuid
-from datetime import UTC, datetime
+from datetime import timezone, datetime
 
 import pandas as pd
 import requests
@@ -21,6 +21,7 @@ load_dotenv()
 API_KEY = os.getenv("ALPHA_VANTAGE_KEY")
 BASE_URL = "https://www.alphavantage.co/query"
 
+# TICKERS = ["GS"]
 TICKERS = ["JPM", "BAC", "GS", "MS", "WFC"]
 
 
@@ -41,6 +42,12 @@ def fetch_daily_prices(ticker: str) -> pd.DataFrame:
     response.raise_for_status()
     data = response.json()
 
+    if "Information" in data:
+        raise RuntimeError(f"Alpha Vantage rate limit/info message: {data['Information']}")
+
+    if "Note" in data:
+        raise RuntimeError(f"Alpha Vantage rate limit note: {data['Note']}")
+
     if "Time Series (Daily)" not in data:
         logger.error("Unexpected response for %s: %s", ticker, data)
         raise ValueError(f"No time series data returned for {ticker}")
@@ -57,7 +64,7 @@ def fetch_daily_prices(ticker: str) -> pd.DataFrame:
                 "LOW_PRICE": values["3. low"],
                 "CLOSE_PRICE": values["4. close"],
                 "VOLUME": values["5. volume"],
-                "LOADED_AT": datetime.now(UTC).replace(tzinfo=None),
+                "LOADED_AT": datetime.now(timezone.utc),
             }
         )
 
@@ -69,6 +76,7 @@ def fetch_daily_prices(ticker: str) -> pd.DataFrame:
     df["LOW_PRICE"] = df["LOW_PRICE"].astype(float)
     df["CLOSE_PRICE"] = df["CLOSE_PRICE"].astype(float)
     df["VOLUME"] = df["VOLUME"].astype(int)
+    df["LOADED_AT"] = pd.to_datetime(df["LOADED_AT"])
     df["INGESTION_ID"] = INGESTION_ID
     df["SOURCE_SYSTEM"] = "ALPHA_VANTAGE"
     df["ENDPOINT_NAME"] = "TIME_SERIES_DAILY"
@@ -87,7 +95,7 @@ def load_prices_to_snowflake(df: pd.DataFrame, ticker: str) -> None:
 
     try:
         cursor = conn.cursor()
-
+        # -- Never used temp call like that using like from the raw table to be established, Snowflake can
         cursor.execute(
             """
             CREATE TEMPORARY TABLE STG_STOCK_PRICES_SESSION
