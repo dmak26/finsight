@@ -69,7 +69,7 @@ def fetch_economic_indicator(indicator: dict) -> pd.DataFrame:
                 "INDICATOR_NAME": indicator_name,
                 "OBSERVATION_DATE": row.get("date"),
                 "OBSERVATION_VALUE": row.get("value"),
-                "UNIT": data.get("unit"),
+                "UNIT": data.get("unit") or "UNKNOWN",
                 "INTERVAL": interval,
                 "RAW_PAYLOAD": json.dumps(row),
                 "INGESTION_ID": INGESTION_ID,
@@ -186,7 +186,7 @@ def load_economic_indicator_to_snowflake(df: pd.DataFrame, indicator_name: str) 
 
 def run_ingestion(indicators: list[dict] = INDICATORS) -> None:
     """ Ingestion phase """
-    
+
     logger.info("Starting economic indicators ingestion for %s indicators", len(indicators))
 
     success_count = 0
