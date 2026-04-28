@@ -1,6 +1,31 @@
+# Virtual environment
 .venv/
+
+# Environment variables
 .env
+
+# Python cache
 __pycache__/
-* .pyc 
+*.pyc
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# Executables
 *.exe
+
+# IDEs (optional but recommended)
+.vscode/
+.idea/
+
+# Jupyter (future-proof)
+.ipynb_checkpoints/
+
+# Logs (optional)
+*.log
+
+# Build artifacts (future-proof)
+dist/
+build/
+*.egg-info/
