@@ -16,7 +16,8 @@ Thumbs.db
 *.exe
 
 # IDEs (optional but recommended)
-.vscode/
+.vscode/*
+!.vscode/settings.json
 .idea/
 
 # Jupyter (future-proof)

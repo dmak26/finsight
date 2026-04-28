@@ -49,7 +49,7 @@ def fetch_income_statement(ticker: str) -> pd.DataFrame:
     if "Note" in data:
         raise RuntimeError(f"Alpha Vantage rate limit note: {data['Note']}")
 
-    if "annualReports" not in data and "quarterlyReports" not in data:
+    if "annualReports" not in data or "quarterlyReports" not in data:
             logger.error("Unexpected income statement response for %s: %s", ticker, data)
             raise ValueError(f"No income statement data returned for {ticker}")
 
